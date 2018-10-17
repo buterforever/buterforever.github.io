@@ -6,5 +6,5 @@ if ('serviceWorker' in navigator) {
       }))
       .catch((err) => {
       	console.log('Service worker not installed');
-      }
+      });
 }
