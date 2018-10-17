@@ -1,11 +1,12 @@
-const cacheVersion = 'v1';
+const cacheVersion = 'v2';
 const CACHE = 'network-or-cache-'+cacheVersion;
 const timeout = 400;
 // При установке воркера мы должны закешировать часть данных (статику).
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE).then((cache) => cache.addAll([
-                './bmw.jpg'
+                './bmw.jpg',
+                './index.html'
             ])
         ));
 });
