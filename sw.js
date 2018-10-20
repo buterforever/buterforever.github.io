@@ -1,4 +1,4 @@
-const cacheVersion = 'v2';
+const cacheVersion = 'v3';
 const CACHE = 'network-or-cache-'+cacheVersion;
 const timeout = 400;
 // При установке воркера мы должны закешировать часть данных (статику).
@@ -13,6 +13,12 @@ self.addEventListener('install', (event) => {
 
 // при событии fetch, мы и делаем запрос, но используем кэш, только после истечения timeout.
 self.addEventListener('fetch', (event) => {
+
+    const url = new URL(event.request.url);
+    console.log('url');
+    console.log(url);
+    console.log(url.origin);
+
     event.respondWith(fromNetwork(event.request, timeout)
       .catch((err) => {
           console.log(`Error: ${err.message()}`);
