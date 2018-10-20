@@ -22,7 +22,7 @@ self.addEventListener('fetch', (event) => {
 const cacheVersion = 'v4';
 const CACHE = 'network-or-cache-'+cacheVersion;*/
 
-const PRECACHE = 'precache-v1';
+const PRECACHE = 'precache-v2';
 const RUNTIME = 'runtime';
 
 const timeout = 400;
