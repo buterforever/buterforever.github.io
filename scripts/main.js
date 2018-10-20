@@ -2,7 +2,7 @@
 
 var API_KEY = window.GoogleSamples.Config.gcmAPIKey;
 var GCM_ENDPOINT = 'https://android.googleapis.com/gcm/send';
-
+alert(API_KEY);
 var curlCommandDiv = document.querySelector('.js-curl-command');
 var isPushEnabled = false;
 
@@ -114,7 +114,7 @@ function subscribe() {
   // we process the permission request
   var pushButton = document.querySelector('.js-push-button');
   pushButton.disabled = true;
-
+  
   navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
     serviceWorkerRegistration.pushManager.subscribe({userVisibleOnly: true})
       .then(function(subscription) {
@@ -212,16 +212,10 @@ window.addEventListener('load', function() {
 
   // Check that service workers are supported, if so, progressively
   // enhance and add push messaging support, otherwise continue without it.
-
   if ('serviceWorker' in navigator) {
-      // Весь код регистрации у нас асинхронный.
-      navigator.serviceWorker.register('./sw.js')
-      .then(() => navigator.serviceWorker.ready.then((worker) => {
-        console.log('Service worker succesfully installed');
-      }))
-      .catch((err) => {
-        console.log('Service worker not installed');
-    });
+    navigator.serviceWorker.register('./sw.js')
+    .then(initialiseState);
+  } else {
+    window.Demo.debug.log('Service workers aren\'t supported in this browser.');
   }
-  
 });
