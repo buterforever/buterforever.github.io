@@ -5,11 +5,54 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 		<link rel="manifest" href="./manifest.json">
 		<meta name="theme-color" content="#ffffff">
-		<script type="text/javascript" src="./scripts/pwa.js"></script>
+		<!-- Add to homescreen for Chrome on Android -->
+	    <meta name="mobile-web-app-capable" content="yes">
+	    <link rel="icon" sizes="192x192" href="../icons/android-icon-192x192.png">
+
+	    <!-- Add to homescreen for Safari on iOS -->
+	    <meta name="apple-mobile-web-app-title" content="Push Messaging and Notifications Sample">
+
+	    <meta name="apple-mobile-web-app-capable" content="yes">
+	    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+	    <link rel="apple-touch-icon-precomposed" href="../icons/apple-icon-precomposed.png">
+
+		<script type="text/javascript" src="./scripts/config.js"></script>
+		<script type="text/javascript" src="./scripts/main.js"></script>
+		<script type="text/javascript" src="./scripts/demo.js"></script>
 	</head>
 <body>
 	Hello World!!!
 	<img src="./bmw.jpg" />
 	<img src="https://s.auto.drom.ru/i24226/s/photos/31493/31492959/gen1200_325867737.jpg" />	
+
+
+	<h1>Push Messaging &amp; Notifications</h1>
+
+    <p>Available in <a href="https://www.chromestatus.com/feature/5416033485586432">Chrome 42+</a> &amp; <a href="https://www.chromestatus.com/feature/5480344312610816">Chrome 42+</a></p>
+
+    <p>To use this sample please do the following:</p>
+
+    <ol>
+      <li>Create a project in the <a href="https://console.firebase.google.com"  target="_blank">Firebase Developer Console</a>.</li>
+      <li>Go to Settings (The cog near the top left corner), click the 'Cloud Messaging Tab'.</li>
+      <li>Create a copy of [config.sample.js](config.sample.js) called config.js.</li>
+      <li>Create a copy of [manifest.sample.json](manifest.sample.json) called manifest.json.</li>
+      <li>Replace "&lt;Your Cloud Messaging API Key ...&gt;" in your new `config.js` file with your own API key from your new project on Firebase Developer Console.</li>
+      <li>Replace "&lt;Your Cloud Sender ID ...&gt;" in your new `manifest.json` with your own sender ID from the Firebase Developer Console project.</li>
+    </ol>
+
+
+    <p>
+        <button class="js-push-button" disabled>
+          Enable Push Messages
+        </button>
+    </p>
+
+    <br />
+    <br />
+
+    <h2>cURL Command to Send Push</h2>
+    <div class="js-curl-command"></div>
+
 </body>
 </html>
