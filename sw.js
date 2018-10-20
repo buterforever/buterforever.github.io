@@ -22,7 +22,7 @@ self.addEventListener('fetch', (event) => {
 const cacheVersion = 'v4';
 const CACHE = 'network-or-cache-'+cacheVersion;*/
 
-const PRECACHE = 'precache-v2';
+const PRECACHE = 'precache-v1';
 const RUNTIME = 'runtime';
 
 const timeout = 400;
@@ -30,12 +30,11 @@ const timeout = 400;
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(PRECACHE)
-            .then((cache) => cache.addAll([
-                './404.html',
-                './bmw.jpg',
-            ])
+            .then(cache => {
+                cache.addAll(['./404.html'])
+            })
             .then(self.skipWaiting())
-        ));
+        );
 });
 
 // The activate handler takes care of cleaning up old caches.
