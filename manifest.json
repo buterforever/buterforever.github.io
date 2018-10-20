@@ -2,7 +2,7 @@
   "name": "TEST.RU",
   "short_name": "TEST.RU",
   "lang": "ru-ru",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#fff",
   "background_color": "#fff",
