@@ -29,7 +29,7 @@ const timeout = 400;
 // При установке воркера мы должны закешировать часть данных (статику).
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE)
+        caches.open(PRECACHE)
             .then((cache) => cache.addAll([
                 './404.html',
                 './bmw.jpg',
