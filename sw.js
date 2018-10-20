@@ -1,4 +1,6 @@
-const cacheVersion = 'v3';
+'use strict'
+
+const cacheVersion = 'v4';
 const CACHE = 'network-or-cache-'+cacheVersion;
 const timeout = 400;
 // При установке воркера мы должны закешировать часть данных (статику).
@@ -6,7 +8,6 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE).then((cache) => cache.addAll([
                 './bmw.jpg',
-                './index.html'
             ])
         ));
 });
@@ -15,15 +16,18 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
-    console.log('url');
-    console.log(url);
-    console.log(url.origin);
 
-    event.respondWith(fromNetwork(event.request, timeout)
-      .catch((err) => {
-          console.log(`Error: ${err.message()}`);
-          return fromCache(event.request);
-      }));
+    if (url.origin == 'http://localhost')
+    {
+        event.respondWith(fromNetwork(event.request, timeout)
+          .catch((err) => {
+              console.log(`Error: ${err.message()}`);
+              return fromCache(event.request);
+          }));
+    } else
+    {
+        console.log('Возвращаем то, что есть');
+    }
 });
 
 // Временно-ограниченный запрос.
