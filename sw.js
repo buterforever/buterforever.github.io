@@ -31,9 +31,8 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE)
             .then((cache) => cache.addAll([
-                './bmw.jpg',
                 './404.html',
-                '/'
+                './bmw.jpg',
             ])
             .then(self.skipWaiting())
         ));
