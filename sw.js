@@ -1,32 +1,82 @@
-'use strict'
+/*let CACHE_NAME = 'sw-v1'
+self.addEventListener('fetch', (event) => {
+  if (event.request.method === 'GET') {
+    event.respondWith(
+      caches.match(event.request)
+      .then((cached) => {
+        var networked = fetch(event.request)
+          .then((response) => {
+            let cacheCopy = response.clone()
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(event.request, cacheCopy))
+            return response;
+          })
+          .catch(() => caches.match(offlinePage));
+        return cached || networked;
+      })
+    )
+  }
+  return;
+});
 
 const cacheVersion = 'v4';
-const CACHE = 'network-or-cache-'+cacheVersion;
+const CACHE = 'network-or-cache-'+cacheVersion;*/
+
+const PRECACHE = 'precache-v1';
+const RUNTIME = 'runtime';
+
 const timeout = 400;
 // При установке воркера мы должны закешировать часть данных (статику).
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE).then((cache) => cache.addAll([
+        caches.open(CACHE)
+            .then((cache) => cache.addAll([
                 './bmw.jpg',
+                './404.html',
+                '/'
             ])
+            .then(self.skipWaiting())
         ));
+});
+
+// The activate handler takes care of cleaning up old caches.
+self.addEventListener('activate', event => {
+  const currentCaches = [PRECACHE, RUNTIME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return cacheNames.filter(cacheName => !currentCaches.includes(cacheName));
+    }).then(cachesToDelete => {
+      return Promise.all(cachesToDelete.map(cacheToDelete => {
+        return caches.delete(cacheToDelete);
+      }));
+    }).then(() => self.clients.claim())
+  );
 });
 
 // при событии fetch, мы и делаем запрос, но используем кэш, только после истечения timeout.
 self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
+    console.log(url.origin);
 
-    if (url.origin == 'http://localhost')
-    {
-        event.respondWith(fromNetwork(event.request, timeout)
-          .catch((err) => {
-              console.log(`Error: ${err.message()}`);
-              return fromCache(event.request);
-          }));
-    } else
-    {
-        console.log('Возвращаем то, что есть');
+    if (event.request.url.startsWith(self.location.origin)) {
+        console.log('Отсылаем запрос на свой же сервер');
+        event.respondWith(
+          caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+
+            return caches.open(RUNTIME).then(cache => {
+              return fetch(event.request).then(response => {
+                // Put a copy of the response in the runtime cache.
+                return cache.put(event.request, response.clone()).then(() => {
+                  return response;
+                });
+              });
+            });
+          })
+        );
     }
 });
 
