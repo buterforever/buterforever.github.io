@@ -37,7 +37,7 @@ function sendSubscriptionToServer(subscription) {
   console.log('TODO: Implement sendSubscriptionToServer()');
 
   var mergedEndpoint = endpointWorkaround(subscription);
-
+  console.log(mergedEndpoint);
   // This is just for demo purposes / an easy to test by
   // generating the appropriate cURL command
   showCurlCommand(mergedEndpoint);
