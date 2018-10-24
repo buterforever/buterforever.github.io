@@ -212,16 +212,10 @@ window.addEventListener('load', function() {
 
   // Check that service workers are supported, if so, progressively
   // enhance and add push messaging support, otherwise continue without it.
-
   if ('serviceWorker' in navigator) {
-      // Весь код регистрации у нас асинхронный.
-      navigator.serviceWorker.register('./sw.js')
-      .then(() => navigator.serviceWorker.ready.then((worker) => {
-        console.log('Service worker succesfully installed');
-      }))
-      .catch((err) => {
-        console.log('Service worker not installed');
-    });
+    navigator.serviceWorker.register('./service-worker.js')
+    .then(initialiseState);
+  } else {
+    window.Demo.debug.log('Service workers aren\'t supported in this browser.');
   }
-  
 });
