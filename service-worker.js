@@ -40,11 +40,35 @@ self.addEventListener('notificationclick', function(event) {
   }));
 });
 
-self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-    console.log(url.origin);
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    console.log('При установке добавляем в кеш данные');
+    caches.open('v1').then(function(cache) {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/bmw.jpg'
+      ]);
+    })
+  );
+});
 
-    if (event.request.url.startsWith(self.location.origin)) {
-        console.log('Отсылаем запрос на свой же сервер');
-    }
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then(function(resp) {
+      return resp || fetch(event.request).then(function(response) {
+        if (event.request.url.startsWith(self.location.origin)) {
+          console.log('если мы обращаемся к своему серверу, то добавляем запрос в кеш');
+          return caches.open('v1').then(function(cache) {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        } else{
+          console.log('иначе, если это чужой сервер, то просто возвращаем запрос');
+          console.log(response);
+          return response;
+        }
+      });
+    })
+  );
 });
