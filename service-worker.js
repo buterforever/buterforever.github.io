@@ -3,8 +3,8 @@
 self.addEventListener('push', function(event) {
   console.log('Received a push message', event);
 
-  var title = 'Yay a message.';
-  var body = 'We have received a push message.';
+  var title = 'Всем привет!';
+  var body = 'Как дела?';
   var icon = '/images/icon-192x192.png';
   var tag = 'simple-push-demo-notification-tag';
 
@@ -38,4 +38,13 @@ self.addEventListener('notificationclick', function(event) {
       return clients.openWindow('/');
     }
   }));
+});
+
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+    console.log(url.origin);
+
+    if (event.request.url.startsWith(self.location.origin)) {
+        console.log('Отсылаем запрос на свой же сервер');
+    }
 });
