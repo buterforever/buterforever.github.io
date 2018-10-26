@@ -1,7 +1,7 @@
 'use strict';
 
 
-let version_cache = 'vers1';
+let version_cache = 'vers2';
 let cacheName = version_cache+'_cache';
 
 self.addEventListener('push', function(event) {
@@ -83,7 +83,7 @@ self.addEventListener('fetch', (event) => {
     return false;
   }
 
-  function onFetch (event, opts) {
+  function onFetch (event/*, opts*/) {
     console.log('Обрабатываем запрос на наш сервис и кешируем данные');
     return caches.open('v1').then(function(cache) {
       cache.put(event.request, response.clone());
@@ -91,8 +91,8 @@ self.addEventListener('fetch', (event) => {
     });
   }
 
-  if (shouldHandleFetch(event, config)) {
-    onFetch(event, config);
+  if (shouldHandleFetch(event/*, config*/)) {
+    onFetch(event/*, config*/);
   } else{
     console.log('А тут мы отправляем запрос как обычно, потому что это другой сервер');
     console.log(event.request.url);
