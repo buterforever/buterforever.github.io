@@ -1,5 +1,9 @@
 'use strict';
 
+
+let version_cache = 'vers1';
+let cacheName = version_cache+'_cache';
+
 self.addEventListener('push', function(event) {
   console.log('Received a push message', event);
 
@@ -41,20 +45,60 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('install', function(event) {
-  event.waitUntil(
-    console.log('При установке добавляем в кеш данные');
-    caches.open('v1').then(function(cache) {
-      return cache.addAll([
+  function onInstall (event, con) {
+    return caches.open(cacheName)
+      .then(cache => cache.addAll([
         '/',
         '/index.html',
         '/bmw.jpg'
-      ]);
-    })
+      ])
+    );
+  }
+  event.waitUntil(onInstall(event));
+});
+
+
+self.addEventListener('activate', event => {
+  function onActivate (event, version_cache) {
+    console.log('Запуск onActivate');
+    return caches.keys()
+      .then(cacheKeys => {
+        var oldCacheKeys = cacheKeys.filter(key =>
+          key.indexOf(version_cache) !== 0
+        );
+        var deletePromises = oldCacheKeys.map(oldKey => caches.delete(oldKey));
+        return Promise.all(deletePromises);
+      });
+  }
+
+  event.waitUntil(
+    onActivate(event, version_cache)
+     .then( () => self.clients.claim() )
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
+  function shouldHandleFetch (event, opts) {
+    if (event.request.url.startsWith(self.location.origin)) return true;
+    return false;
+  }
+
+  function onFetch (event, opts) {
+    console.log('Обрабатываем запрос на наш сервис и кешируем данные');
+    return caches.open('v1').then(function(cache) {
+      cache.put(event.request, response.clone());
+      return response;
+    });
+  }
+
+  if (shouldHandleFetch(event, config)) {
+    onFetch(event, config);
+  } else{
+    console.log('А тут мы отправляем запрос как обычно, потому что это другой сервер');
+    console.log(event.request.url);
+  }
+
+  /*event.respondWith(
     caches.match(event.request).then(function(resp) {
       return resp || fetch(event.request).then(function(response) {
         if (event.request.url.startsWith(self.location.origin)) {
@@ -70,5 +114,5 @@ self.addEventListener('fetch', (event) => {
         }
       });
     })
-  );
+  );*/
 });
