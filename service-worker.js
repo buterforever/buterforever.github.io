@@ -1,7 +1,7 @@
 'use strict';
 
 
-let version_cache = 'vers2';
+let version_cache = 'vers3';
 let cacheName = version_cache+'_cache';
 
 self.addEventListener('push', function(event) {
@@ -85,7 +85,7 @@ self.addEventListener('fetch', (event) => {
 
   function onFetch (event/*, opts*/) {
     console.log('Обрабатываем запрос на наш сервис и кешируем данные');
-    return caches.open('v1').then(function(cache) {
+    return caches.open(cacheName).then(function(cache) {
       cache.put(event.request, response.clone());
       return response;
     });
