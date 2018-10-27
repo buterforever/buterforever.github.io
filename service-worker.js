@@ -2,7 +2,7 @@
 
 
 let version_cache = 'vers3';
-let cacheName = version_cache+'_cache';
+//let cacheName = version_cache+'_cache';
 
 self.addEventListener('push', function(event) {
   console.log('Received a push message', event);
@@ -78,7 +78,7 @@ self.addEventListener('activate', event => {
 });
 
 var config = {
-  version: 'achilles',
+  version: 'achilles1',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
