@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('install', function(event) {
-  function onInstall (event, con) {
+  function onInstall (event) {
     return caches.open(cacheName)
       .then(cache => cache.addAll([
         '/',
