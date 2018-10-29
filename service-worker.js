@@ -1,7 +1,7 @@
 'use strict';
 
 var config = {
-  version: 'achilles5',
+  version: 'achilles6',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
