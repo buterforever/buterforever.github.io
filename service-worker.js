@@ -95,7 +95,7 @@ var config = {
 };
 
 function cacheName (key, opts) {
-  return ${opts.version}-${key};
+  return opts.version+'-'+key;
 }
 
 function addToCache (cacheKey, request, response) {
