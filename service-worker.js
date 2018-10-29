@@ -78,7 +78,7 @@ self.addEventListener('activate', event => {
 });
 
 var config = {
-  version: 'achilles1',
+  version: 'achilles2',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
