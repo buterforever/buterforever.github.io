@@ -5,7 +5,9 @@
         "src": "images/icon-192x192.png",
         "sizes": "192x192"
       }],
-  "start_url": "./push/",
+  "start_url": "/",
   "display": "standalone",
+  "background_color": '#fff',
+  "theme_color": '#fff',
   "gcm_sender_id": "557957810541"
 }
