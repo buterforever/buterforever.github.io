@@ -67,6 +67,7 @@ self.addEventListener('install', function(event) {
       ])
     );
   }
+  console.log('onInstall function');
   event.waitUntil(onInstall(event));
 });
 
@@ -83,7 +84,7 @@ self.addEventListener('activate', event => {
         return Promise.all(deletePromises);
       });
   }
-
+  console.log('addEventListener activate');
   event.waitUntil(
     onActivate(event, version_cache)
      .then( () => self.clients.claim() )
@@ -91,10 +92,17 @@ self.addEventListener('activate', event => {
 });
 
 function cacheName (key, opts) {
+  console.log('cacheName function');
+  console.log(key);
+  console.log(opts);
   return opts.version+'-'+key;
 }
 
 function addToCache (cacheKey, request, response) {
+  console.log('function addToCache');
+  console.log(cacheKey);
+  console.log(request);
+  console.log(response);
   if (response.ok) {
     var copy = response.clone();
     caches.open(cacheKey).then( cache => {
@@ -105,6 +113,7 @@ function addToCache (cacheKey, request, response) {
 }
 
 function fetchFromCache (event) {
+  console.log('function fetchFromCache');
     return caches.match(event.request).then(response => {
       if (!response) {
       throw Error(`${event.request.url} not found in cache`);
@@ -143,7 +152,7 @@ self.addEventListener('fetch', (event) => {
       resourceType = 'image';
     }
     cacheKey = cacheName(resourceType, opts);
-
+    console.log('On fetch ' + cacheKey);
     if (resourceType === 'content') {
       event.respondWith(
       fetch(request)
@@ -163,8 +172,5 @@ self.addEventListener('fetch', (event) => {
 
   if (shouldHandleFetch(event, config)) {
     onFetch(event, config);
-  } else{
-    console.log('А тут мы отправляем запрос как обычно, потому что это другой сервер');
-    console.log(event.request.url);
   }
 });
