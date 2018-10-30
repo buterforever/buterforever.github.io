@@ -1,0 +1,7 @@
+<ifModule mod_headers.c>
+  <FilesMatch (\.css|\.js|sprites\.png)$>
+	Header unset ETag
+	Header unset Expires
+	Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
