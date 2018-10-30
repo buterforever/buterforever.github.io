@@ -1,13 +1,13 @@
 'use strict';
 
 var config = {
-  version: 'achilles6',
+  version: 'achilles7',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
     '/'
   ],
-  cachePathPattern: /^\/(?:(20[0-9]{2}|about|blog|css|images|js)\/(.+)?)?$/,
+  cachePathPattern: /^\/(?:(20[0-9]{2}|news|blog|css|images|js)\/(.+)?)?$/,
   offlineImage: '<svg role="img" aria-labelledby="offline-title"'
     + ' viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">'
     + '<title id="offline-title">Offline</title>'
@@ -68,17 +68,20 @@ self.addEventListener('install', function(event) {
     );
   }
   console.log('onInstall function');
-  event.waitUntil(onInstall(event));
+  event.waitUntil(
+    onInstall(event)
+    .then( () => self.skipWaiting() )
+  );
 });
 
 
 self.addEventListener('activate', event => {
-  function onActivate (event, version_cache) {
+  function onActivate (event, opts) {
     console.log('Запуск onActivate');
     return caches.keys()
       .then(cacheKeys => {
         var oldCacheKeys = cacheKeys.filter(key =>
-          key.indexOf(version_cache) !== 0
+          key.indexOf(opts.version) !== 0
         );
         var deletePromises = oldCacheKeys.map(oldKey => caches.delete(oldKey));
         return Promise.all(deletePromises);
@@ -86,9 +89,10 @@ self.addEventListener('activate', event => {
   }
   console.log('addEventListener activate');
   event.waitUntil(
-    onActivate(event, version_cache)
+    onActivate(event, config)
      .then( () => self.clients.claim() )
   );
+  console.log('Service Worker has been activated'); 
 });
 
 function cacheName (key, opts) {
