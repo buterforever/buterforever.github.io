@@ -1,7 +1,8 @@
 'use strict';
 
+const timeout = 400;
 var config = {
-  version: 'achilles7',
+  version: 'achilles8',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -126,6 +127,17 @@ function fetchFromCache (event) {
   });
 }
 
+function fromNetwork(request, timeout) {
+  console.log('Ура, берем данные из инета');
+    return new Promise((fulfill, reject) => {
+        var timeoutId = setTimeout(reject, timeout);
+        fetch(request).then((response) => {
+            clearTimeout(timeoutId);
+            fulfill(response);
+        }, reject);
+    });
+}
+
 function offlineResponse (resourceType, opts) {
   if (resourceType === 'image') {
   return new Response(opts.offlineImage,
@@ -144,6 +156,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   function onFetch (event, opts) {
+
     console.log('Запустили функцию onFetch');
     var request = event.request;
     var acceptHeader = request.headers.get('Accept');
@@ -155,15 +168,24 @@ self.addEventListener('fetch', (event) => {
     } else if (acceptHeader.indexOf('image') !== -1) {
       resourceType = 'image';
     }
+
     cacheKey = cacheName(resourceType, opts);
     console.log('On fetch ' + cacheKey);
     if (resourceType === 'content') {
-      event.respondWith(
+
+      /*event.respondWith(
       fetch(request)
         .then(response => addToCache(cacheKey, request, response))
         .catch(() => fetchFromCache(event))
         .catch(() => offlineResponse(resourceType, opts))
+      );*/
+
+      event.respondWith(fromNetwork(request, timeout)
+            .then(response => addToCache(cacheKey, request, response))
+            .catch(() => fetchFromCache(event))
+            .catch(() => offlineResponse(resourceType, opts))
       );
+
     } else {
       event.respondWith(
         fetchFromCache(event)
