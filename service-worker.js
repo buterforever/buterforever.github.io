@@ -2,13 +2,13 @@
 
 const timeout = 400;
 var config = {
-  version: 'achilles9',
+  version: 'achilles10',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
     '/'
   ],
-  cachePathPattern: /^\/(?:(20[0-9]{2}|news|blog|css|images|js)\/(.+)?)?$/,
+  cachePathPattern: /^\/(?:(20[0-9]{2}|obshchestvo|politika|biznes|sport|krasota|popular|all|dosug|zdorove|dom|zurkhay|chelovek-goda|tayny-buryatii|css|images|js)\/(.+)?)?$/,
   offlineImage: '<svg role="img" aria-labelledby="offline-title"'
     + ' viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">'
     + '<title id="offline-title">Offline</title>'
@@ -19,8 +19,6 @@ var config = {
 };
 
 self.addEventListener('push', function(event) {
-  console.log('Received a push message', event);
-
   var title = 'Всем привет!';
   var body = 'Как дела?';
   var icon = '/images/icon-192x192.png';
@@ -36,7 +34,6 @@ self.addEventListener('push', function(event) {
 });
 
 self.addEventListener('notificationclick', function(event) {
-  console.log('On notification click: ', event.notification.tag);
   // Android doesn’t close the notification when you click on it
   // See: http://crbug.com/463146
   event.notification.close();
@@ -68,7 +65,6 @@ self.addEventListener('install', function(event) {
       ])
     );
   }
-  console.log('onInstall function');
   event.waitUntil(
     onInstall(event)
     .then( () => self.skipWaiting() )
@@ -78,7 +74,6 @@ self.addEventListener('install', function(event) {
 
 self.addEventListener('activate', event => {
   function onActivate (event, opts) {
-    console.log('Запуск onActivate');
     return caches.keys()
       .then(cacheKeys => {
         var oldCacheKeys = cacheKeys.filter(key =>
@@ -88,7 +83,6 @@ self.addEventListener('activate', event => {
         return Promise.all(deletePromises);
       });
   }
-  console.log('addEventListener activate');
   event.waitUntil(
     onActivate(event, config)
      .then( () => self.clients.claim() )
@@ -97,17 +91,10 @@ self.addEventListener('activate', event => {
 });
 
 function cacheName (key, opts) {
-  console.log('cacheName function');
-  console.log(key);
-  console.log(opts);
   return opts.version+'-'+key;
 }
 
 function addToCache (cacheKey, request, response) {
-  console.log('function addToCache');
-  console.log(cacheKey);
-  console.log(request);
-  console.log(response);
   if (response.ok) {
     var copy = response.clone();
     caches.open(cacheKey).then( cache => {
@@ -118,7 +105,6 @@ function addToCache (cacheKey, request, response) {
 }
 
 function fetchFromCache (event) {
-  console.log('function fetchFromCache');
     return caches.match(event.request).then(response => {
       if (!response) {
       throw Error(`${event.request.url} not found in cache`);
@@ -128,7 +114,7 @@ function fetchFromCache (event) {
 }
 
 function fromNetwork(request, timeout) {
-  console.log('Ура, берем данные из инета');
+    console.log('Ура, берем данные из инета');
     return new Promise((fulfill, reject) => {
         var timeoutId = setTimeout(reject, timeout);
         fetch(request).then((response) => {
@@ -156,8 +142,6 @@ self.addEventListener('fetch', (event) => {
   }
 
   function onFetch (event, opts) {
-
-    console.log('Запустили функцию onFetch');
     var request = event.request;
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
@@ -170,16 +154,15 @@ self.addEventListener('fetch', (event) => {
     }
 
     cacheKey = cacheName(resourceType, opts);
-    console.log('On fetch ' + cacheKey);
+    console.log(resourceType);
     if (resourceType === 'content') {
-
       /*event.respondWith(
       fetch(request)
         .then(response => addToCache(cacheKey, request, response))
         .catch(() => fetchFromCache(event))
         .catch(() => offlineResponse(resourceType, opts))
       );*/
-
+      console.log('Сейчас будем пытаться взять данные из инета');
       event.respondWith(fromNetwork(request, timeout)
             .then(response => addToCache(cacheKey, request, response))
             .catch(() => fetchFromCache(event))
