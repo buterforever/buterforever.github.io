@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achilles10',
+  version: 'achilles2',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -154,7 +154,6 @@ self.addEventListener('fetch', (event) => {
     }
 
     cacheKey = cacheName(resourceType, opts);
-    console.log(resourceType);
     if (resourceType === 'content') {
       /*event.respondWith(
       fetch(request)

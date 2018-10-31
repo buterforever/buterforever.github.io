@@ -8,8 +8,6 @@ navigator.serviceWorker.getRegistrations().then(function(registrations) {
 });
 
 */
-  
-console.log('Achtung!!! Это новая версия main.js');
 
 var API_KEY = window.GoogleSamples.Config.gcmAPIKey;
 var GCM_ENDPOINT = 'https://android.googleapis.com/gcm/send';
@@ -21,8 +19,9 @@ var isPushEnabled = false;
 // in Chrome 44 by concatenating the subscription Id
 // to the subscription endpoint
 function endpointWorkaround(pushSubscription) {
+  
   // Make sure we only mess with GCM
-  if (pushSubscription.endpoint.indexOf('https://android.googleapis.com/gcm/send') !== 0) {
+  if (pushSubscription.endpoint.indexOf(GCM_ENDPOINT) !== 0) {
     return pushSubscription.endpoint;
   }
 
@@ -39,6 +38,8 @@ function endpointWorkaround(pushSubscription) {
 }
 
 function sendSubscriptionToServer(subscription) {
+
+
   // TODO: Send the subscription.endpoint
   // to your server and save it to send a
   // push message at a later date
@@ -48,6 +49,7 @@ function sendSubscriptionToServer(subscription) {
   console.log('TODO: Implement sendSubscriptionToServer()');
 
   var mergedEndpoint = endpointWorkaround(subscription);
+
   // This is just for demo purposes / an easy to test by
   // generating the appropriate cURL command
   showCurlCommand(mergedEndpoint);
@@ -126,6 +128,9 @@ function subscribe() {
   pushButton.disabled = true;
 
   navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
+    // sync register workers
+    serviceWorkerRegistration.sync.register('syncdata');
+
     serviceWorkerRegistration.pushManager.subscribe({userVisibleOnly: true})
       .then(function(subscription) {
         // The subscription was successful
@@ -222,18 +227,19 @@ window.addEventListener('load', function() {
 
   // Check that service workers are supported, if so, progressively
   // enhance and add push messaging support, otherwise continue without it.
-  if ('serviceWorker' in navigator) {
-
+    if ('serviceWorker' in navigator) {
+      // убираем старые service workers
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) {
-                console.log('Разрегистрация сервис воркера');
-                registration.unregister();
+                var sw_path = registration.active.scriptURL.split('/');
+                var sw_name = sw_path[sw_path.length - 1];
+                if (sw_name != 'service_worker.js')
+                  registration.unregister();
         }}).catch(function(err) {
             console.log('Service Worker registration failed: ', err);
         });
-
-
-      navigator.serviceWorker.register('./service-worker.js')
+        // регистрируем новый
+      navigator.serviceWorker.register('./service_worker.js')
         .then(initialiseState);
     } else {
       window.Demo.debug.log('Service workers aren\'t supported in this browser.');
