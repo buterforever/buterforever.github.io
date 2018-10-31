@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achilles8',
+  version: 'achilles9',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
