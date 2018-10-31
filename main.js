@@ -50,15 +50,17 @@ function sendSubscriptionToServer(subscription) {
 
   var mergedEndpoint = endpointWorkaround(subscription);
 
+  console.log('Здесь мы должны отправить endpoint для дальнейшей отправки пушей');
+
   // This is just for demo purposes / an easy to test by
   // generating the appropriate cURL command
-  showCurlCommand(mergedEndpoint);
+  addSubsriptionIdToServer(mergedEndpoint);
 }
 
 // NOTE: This code is only suitable for GCM endpoints,
 // When another browser has a working version, alter
 // this to send a PUSH request directly to the endpoint
-function showCurlCommand(mergedEndpoint) {
+function addSubsriptionIdToServer(mergedEndpoint) {
   // The curl command to trigger a push message straight from GCM
   if (mergedEndpoint.indexOf(GCM_ENDPOINT) !== 0) {
     window.Demo.debug.log('This browser isn\'t currently ' +
@@ -69,11 +71,21 @@ function showCurlCommand(mergedEndpoint) {
   var endpointSections = mergedEndpoint.split('/');
   var subscriptionId = endpointSections[endpointSections.length - 1];
 
-  var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
+  $.ajax({
+    type: 'POST',
+    url: '/ajax/addSubscribe.php',
+    data: 'subscriptionId='+subscriptionId,
+    success: function(res){
+      console.log('Отправили запрос в ajax и получили ответ');
+      console.log(res);
+    }
+  });
+
+  /*var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
     '" --header Content-Type:"application/json" ' + GCM_ENDPOINT +
     ' -d "{\\"registration_ids\\":[\\"' + subscriptionId + '\\"]}"';
 
-  curlCommandDiv.textContent = curlCommand;
+  curlCommandDiv.textContent = curlCommand;*/
 }
 
 function unsubscribe() {
@@ -141,6 +153,9 @@ function subscribe() {
         // TODO: Send the subscription subscription.endpoint
         // to your server and save it to send a push message
         // at a later date
+
+        console.log('Здесь мы должны отправить endpoint для дальнейшей отправки пушей');
+
         return sendSubscriptionToServer(subscription);
       })
       .catch(function(e) {
