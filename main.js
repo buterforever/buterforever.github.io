@@ -1,4 +1,15 @@
 'use strict';
+/*
+navigator.serviceWorker.getRegistrations().then(function(registrations) {
+  console.log(registrations);
+  for(let registration of registrations) {
+    registration.unregister();
+  }
+});
+
+*/
+  
+console.log('Achtung!!! Это новая версия main.js');
 
 var API_KEY = window.GoogleSamples.Config.gcmAPIKey;
 var GCM_ENDPOINT = 'https://android.googleapis.com/gcm/send';
@@ -211,17 +222,20 @@ window.addEventListener('load', function() {
 
   // Check that service workers are supported, if so, progressively
   // enhance and add push messaging support, otherwise continue without it.
-  /*if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js')
-    .then(initialiseState);
-  } else {
-    window.Demo.debug.log('Service workers aren\'t supported in this browser.');
-  }*/
+  if ('serviceWorker' in navigator) {
 
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister()
-    } 
-  })
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+                console.log('Разрегистрация сервис воркера');
+                registration.unregister();
+        }}).catch(function(err) {
+            console.log('Service Worker registration failed: ', err);
+        });
 
+
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(initialiseState);
+    } else {
+      window.Demo.debug.log('Service workers aren\'t supported in this browser.');
+    }
 });
