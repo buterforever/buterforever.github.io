@@ -39,22 +39,47 @@ function endpointWorkaround(pushSubscription) {
 
 function sendSubscriptionToServer(subscription) {
 
-
   // TODO: Send the subscription.endpoint
   // to your server and save it to send a
   // push message at a later date
   //
   // For compatibly of Chrome 43, get the endpoint via
   // endpointWorkaround(subscription)
-  console.log('TODO: Implement sendSubscriptionToServer()');
 
   var mergedEndpoint = endpointWorkaround(subscription);
-
-  console.log('Здесь мы должны отправить endpoint для дальнейшей отправки пушей');
-
-  // This is just for demo purposes / an easy to test by
-  // generating the appropriate cURL command
   addSubsriptionIdToServer(mergedEndpoint);
+}
+
+// Ставим в localStorage отметку о том, что пользователь подписан
+function isTokenSentToServer(currentToken) {
+    return window.localStorage.getItem('sentMessagingToken') == currentToken;
+}
+
+function setTokenSentToServer(currentToken) {
+    window.localStorage.setItem(
+        'sentMessagingToken',
+        currentToken ? currentToken : ''
+    );
+}
+
+function deleteTokenSentToServer() {
+    window.localStorage.removeItem('sentMessagingToken');
+}
+
+
+function removeSubsriptionIdFromServer(subscriptionId) {
+  console.log('Сейчас удали кеш');
+  $.ajax({
+    type: 'POST',
+    url: '/ajax/deleteSubscribe.php',
+    data: 'subscriptionId='+subscriptionId,
+    success: function(res){
+      // убираем отметку, что ключ уже установлен
+      deleteTokenSentToServer();
+      console.log('Ответ после удаления ключа');
+      console.log(res);
+    }
+  });
 }
 
 // NOTE: This code is only suitable for GCM endpoints,
@@ -71,15 +96,19 @@ function addSubsriptionIdToServer(mergedEndpoint) {
   var endpointSections = mergedEndpoint.split('/');
   var subscriptionId = endpointSections[endpointSections.length - 1];
 
-  $.ajax({
-    type: 'POST',
-    url: '/ajax/addSubscribe.php',
-    data: 'subscriptionId='+subscriptionId,
-    success: function(res){
-      console.log('Отправили запрос в ajax и получили ответ');
-      console.log(res);
-    }
-  });
+  if (!isTokenSentToServer(subscriptionId)) {
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/addSubscribe.php',
+      data: 'subscriptionId='+subscriptionId,
+      success: function(res){
+        // ставим отметку, что ключ уже установлен
+        setTokenSentToServer(subscriptionId);
+      }
+    });
+  } else {
+    console.log('Токен уже отправлен на сервер.');
+  }
 
   /*var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
     '" --header Content-Type:"application/json" ' + GCM_ENDPOINT +
@@ -117,6 +146,12 @@ function unsubscribe() {
           pushButton.disabled = false;
           pushButton.textContent = 'Enable Push Messages';
           isPushEnabled = false;
+          
+          var endpointSections = pushSubscription.endpoint.split('/');
+          var subscriptionId = endpointSections[endpointSections.length - 1];
+          console.log('Все готово для удаления кеша subscriptionId');
+          removeSubsriptionIdFromServer(subscriptionId);
+
         }).catch(function(e) {
           // We failed to unsubscribe, this can lead to
           // an unusual state, so may be best to remove
@@ -141,6 +176,7 @@ function subscribe() {
 
   navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
     // sync register workers
+    // нужна ли эта строка?
     serviceWorkerRegistration.sync.register('syncdata');
 
     serviceWorkerRegistration.pushManager.subscribe({userVisibleOnly: true})
@@ -153,8 +189,6 @@ function subscribe() {
         // TODO: Send the subscription subscription.endpoint
         // to your server and save it to send a push message
         // at a later date
-
-        console.log('Здесь мы должны отправить endpoint для дальнейшей отправки пушей');
 
         return sendSubscriptionToServer(subscription);
       })

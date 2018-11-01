@@ -137,6 +137,7 @@ function offlineResponse (resourceType, opts) {
 
 self.addEventListener('fetch', (event) => {
   function shouldHandleFetch (event, opts) {
+    if (event.request.method !== 'GET') { console.log('Этот запрос POST'); return; }
     if (event.request.url.startsWith(self.location.origin)) return true;
     return false;
   }
