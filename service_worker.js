@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'megera1',
+  version: 'megera2',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -147,7 +147,7 @@ self.addEventListener('fetch', (event) => {
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
     var cacheKey;
-
+    console.log(request);
     if (request.method !== 'GET') {console.log('Ура починил'); return; }
 
     if (acceptHeader.indexOf('text/html') !== -1) {
