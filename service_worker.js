@@ -137,7 +137,7 @@ function offlineResponse (resourceType, opts) {
 
 self.addEventListener('fetch', (event) => {
   function shouldHandleFetch (event, opts) {
-    if (event.request.method !== 'GET') { console.log('Этот запрос POST'); return; }
+    if (event.request.method !== 'GET') { console.log('Этот запрос POST'); console.log(); return true; }
     if (event.request.url.startsWith(self.location.origin)) return true;
     return false;
   }
@@ -147,6 +147,8 @@ self.addEventListener('fetch', (event) => {
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
     var cacheKey;
+
+    if (request.method !== 'GET') {console.log('Ура починил'); return; }
 
     if (acceptHeader.indexOf('text/html') !== -1) {
       resourceType = 'content';
