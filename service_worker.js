@@ -137,12 +137,14 @@ function offlineResponse (resourceType, opts) {
 
 self.addEventListener('fetch', (event) => {
   function shouldHandleFetch (event, opts) {
-    if (event.request.method === 'POST') return false;
     if (event.request.url.startsWith(self.location.origin)) return true;
+    if (event.request.method === 'POST') return false;
     return false;
   }
 
   function onFetch (event, opts) {
+    console.log('onFetch');
+    console.log(event.request);
     var request = event.request;
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
