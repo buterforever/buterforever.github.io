@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'megera2',
+  version: 'megera3',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
