@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achiless1',
+  version: 'achiless2',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -147,7 +147,7 @@ self.addEventListener('fetch', (event) => {
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
     var cacheKey;
-    if (request.method === 'POST') {console.log('Ура починил'); return true; }
+    if (request.method === 'POST') {console.log('Ура починил'); return fetch(request); }
     console.log('Продолжаем выполнять onFetch');
     console.log(request);
     if (acceptHeader.indexOf('text/html') !== -1) {
