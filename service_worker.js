@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achiless3',
+  version: 'achiless4',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -180,9 +180,7 @@ self.addEventListener('fetch', (event) => {
     }
   }
 
-  if (event.request.method == 'POST') return true;
-
-  if (shouldHandleFetch(event, config)) {
+  if (shouldHandleFetch(event, config) && event.request.method != 'POST') {
     onFetch(event, config);
   }
 });

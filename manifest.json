@@ -13,5 +13,8 @@
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#317EFB",
+  "permissions": {
+    "desktop-notification": {}
+  },
   "gcm_sender_id": "557957810541"
 }
