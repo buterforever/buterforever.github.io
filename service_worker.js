@@ -138,20 +138,17 @@ function offlineResponse (resourceType, opts) {
 self.addEventListener('fetch', (event) => {
   function shouldHandleFetch (event, opts) {
     if (event.request.url.startsWith(self.location.origin)) return true;
-    if (event.request.method === 'POST') return false;
+    //if (event.request.method === 'POST') return false;
     return false;
   }
 
   function onFetch (event, opts) {
-    console.log('onFetch');
-    console.log(event.request);
     var request = event.request;
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
     var cacheKey;
-    console.log(request);
-    if (request.method !== 'GET') {console.log('Ура починил'); return; }
-
+    if (request.method === 'POST') {console.log('Ура починил'); return true; }
+    console.log('Продолжаем выполнять onFetch');
     if (acceptHeader.indexOf('text/html') !== -1) {
       resourceType = 'content';
     } else if (acceptHeader.indexOf('image') !== -1) {
