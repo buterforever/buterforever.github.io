@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achiless2',
+  version: 'achiless3',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -148,7 +148,6 @@ self.addEventListener('fetch', (event) => {
     var resourceType = 'static';
     var cacheKey;
     if (request.method === 'POST') {console.log('Ура починил'); return fetch(request); }
-    console.log('Продолжаем выполнять onFetch');
     console.log(request);
     if (acceptHeader.indexOf('text/html') !== -1) {
       resourceType = 'content';
@@ -180,6 +179,8 @@ self.addEventListener('fetch', (event) => {
       );
     }
   }
+
+  if (event.request.method == 'POST') return true;
 
   if (shouldHandleFetch(event, config)) {
     onFetch(event, config);
