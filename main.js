@@ -265,8 +265,10 @@ function initialiseState() {
 }
 
 window.addEventListener('load', function() {
+  alert('addEventListener load');
   var pushButton = document.querySelector('.js-push-button');
   pushButton.addEventListener('click', function() {
+    alert('click pushButton');
     if (isPushEnabled) {
       unsubscribe();
     } else {
