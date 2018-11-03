@@ -2,7 +2,7 @@
 
 const timeout = 400;
 var config = {
-  version: 'achiless',
+  version: 'achiless1',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -149,6 +149,7 @@ self.addEventListener('fetch', (event) => {
     var cacheKey;
     if (request.method === 'POST') {console.log('Ура починил'); return true; }
     console.log('Продолжаем выполнять onFetch');
+    console.log(request);
     if (acceptHeader.indexOf('text/html') !== -1) {
       resourceType = 'content';
     } else if (acceptHeader.indexOf('image') !== -1) {
