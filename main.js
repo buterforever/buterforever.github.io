@@ -224,6 +224,7 @@ function subscribe() {
         return sendSubscriptionToServer(subscription);
       })
       .catch(function(e) {
+        console.log('Не прошли проверку на подписку');
         if (Notification.permission === 'denied') {
           // The user denied the notification permission which
           // means we failed to subscribe and the user will need
