@@ -69,7 +69,7 @@ function deleteTokenSentToServer() {
 
 function removeSubsriptionIdFromServer(subscriptionId) {
   console.log('Сейчас удали кеш');
-  fetch('https://buterforever.github.io/ajax/deleteSubscribe.php', {
+  /*fetch('/ajax/deleteSubscribe.php', {
       method: 'post', 
       headers: {  
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
@@ -83,7 +83,8 @@ function removeSubsriptionIdFromServer(subscriptionId) {
     })
     .catch(function (error) {
       console.log('Request failed', error);
-    });
+    });*/
+
   /*$.ajax({
     type: 'POST',
     url: '/ajax/deleteSubscribe.php',
@@ -113,7 +114,9 @@ function addSubsriptionIdToServer(mergedEndpoint) {
 
   if (!isTokenSentToServer(subscriptionId)) {
 
-    fetch('https://buterforever.github.io/ajax/addSubscribe.php', {
+    console.log('Отправили на подписку');
+
+    /*fetch('/ajax/addSubscribe.php', {
       method: 'post', 
       headers: {  
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
@@ -127,7 +130,7 @@ function addSubsriptionIdToServer(mergedEndpoint) {
     })
     .catch(function (error) {
       console.log('Request failed', error);
-    });
+    });*/
 
     /*$.ajax({
       type: 'POST',
