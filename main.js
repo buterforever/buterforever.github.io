@@ -69,7 +69,22 @@ function deleteTokenSentToServer() {
 
 function removeSubsriptionIdFromServer(subscriptionId) {
   console.log('Сейчас удали кеш');
-  $.ajax({
+  fetch('/ajax/deleteSubscribe.php', {
+      method: 'post', 
+      headers: {  
+        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
+      },  
+      body: 'subscriptionId=' + subscriptionId
+    })
+    .then(json)
+    .then(function (data) {
+      console.log('Request succeeded with JSON response', data);
+      deleteTokenSentToServer();
+    })
+    .catch(function (error) {
+      console.log('Request failed', error);
+    });
+  /*$.ajax({
     type: 'POST',
     url: '/ajax/deleteSubscribe.php',
     data: 'subscriptionId='+subscriptionId,
@@ -79,7 +94,7 @@ function removeSubsriptionIdFromServer(subscriptionId) {
       console.log('Ответ после удаления ключа');
       console.log(res);
     }
-  });
+  });*/
 }
 
 // NOTE: This code is only suitable for GCM endpoints,
@@ -97,7 +112,24 @@ function addSubsriptionIdToServer(mergedEndpoint) {
   var subscriptionId = endpointSections[endpointSections.length - 1];
 
   if (!isTokenSentToServer(subscriptionId)) {
-    $.ajax({
+
+    fetch('/ajax/addSubscribe.php', {
+      method: 'post', 
+      headers: {  
+        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
+      },  
+      body: 'subscriptionId=' + subscriptionId
+    })
+    .then(json)
+    .then(function (data) {
+      console.log('Request succeeded with JSON response', data);
+      setTokenSentToServer(subscriptionId);
+    })
+    .catch(function (error) {
+      console.log('Request failed', error);
+    });
+
+    /*$.ajax({
       type: 'POST',
       url: '/ajax/addSubscribe.php',
       data: 'subscriptionId='+subscriptionId,
@@ -105,7 +137,8 @@ function addSubsriptionIdToServer(mergedEndpoint) {
         // ставим отметку, что ключ уже установлен
         setTokenSentToServer(subscriptionId);
       }
-    });
+    });*/
+
   } else {
     console.log('Токен уже отправлен на сервер.');
   }
