@@ -69,7 +69,7 @@ function deleteTokenSentToServer() {
 
 function removeSubsriptionIdFromServer(subscriptionId) {
   console.log('Сейчас удали кеш');
-  fetch('/ajax/deleteSubscribe.php', {
+  fetch('https://buterforever.github.io/ajax/deleteSubscribe.php', {
       method: 'post', 
       headers: {  
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
@@ -113,7 +113,7 @@ function addSubsriptionIdToServer(mergedEndpoint) {
 
   if (!isTokenSentToServer(subscriptionId)) {
 
-    fetch('/ajax/addSubscribe.php', {
+    fetch('https://buterforever.github.io/ajax/addSubscribe.php', {
       method: 'post', 
       headers: {  
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
