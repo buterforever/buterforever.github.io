@@ -1,13 +1,4 @@
 'use strict';
-/*
-navigator.serviceWorker.getRegistrations().then(function(registrations) {
-  console.log(registrations);
-  for(let registration of registrations) {
-    registration.unregister();
-  }
-});
-
-*/
 
 var API_KEY = window.GoogleSamples.Config.gcmAPIKey;
 var GCM_ENDPOINT = 'https://android.googleapis.com/gcm/send';
@@ -213,10 +204,14 @@ function subscribe() {
   navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
     // sync register workers
     // нужна ли эта строка?
-    serviceWorkerRegistration.sync.register('syncdata');
-
-    serviceWorkerRegistration.pushManager.subscribe({userVisibleOnly: true})
+    //serviceWorkerRegistration.sync.register('syncdata');
+    console.log('Сейчас будем подписывать пользователя');
+    serviceWorkerRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(API_KEY)
+    })
       .then(function(subscription) {
+        console.log('Тест subscription');
         // The subscription was successful
         isPushEnabled = true;
         pushButton.textContent = 'Disable Push Messages';
