@@ -1,4 +1,4 @@
-<?
+<?php
 	$subscriptionId = $_REQUEST['subscriptionId'];
 	// добавляем $subscriptionId
 	$fp = fopen($_SERVER['DOCUMENT_ROOT'] . '/subscribes.csv', 'r');
@@ -17,5 +17,7 @@
         fputcsv($handle, $value, ";");
     }
     fclose($handle); //Закрываем
-	echo 'Удаляем из csv';
+	
+	$res = array('status' => 'ok', 'message' => 'Удалено из csv');
+	echo json_encode($res);
 ?>
