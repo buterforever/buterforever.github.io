@@ -1,8 +1,9 @@
 'use strict';
 
+const SOME_API_ENDPOINT = '/ajax/notifications.json';
 const timeout = 400;
 var config = {
-  version: 'achiless2',
+  version: 'megera5',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -19,21 +20,170 @@ var config = {
 };
 
 self.addEventListener('push', function(event) {
+  // Так как пока невозможно передавать данные от push-сервера,
+  // то информацию для уведомлений получаем с нашего сервера
+  event.waitUntil(
+    self.registration.pushManager.getSubscription().then(function(subscription) {
+      fetch(SOME_API_ENDPOINT, {
+        // В данном случае отправляются данные о подписчике, 
+        // что позволит проверить или персонифицировать уведомление
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: 'url=' + subscription.endpoint
+      })
+      .then(function(response) {
+        if (response.status !== 200) {
+          // TODO: Если сервер отдал неверные данные, 
+          // нужно уведомить об этом пользователя или администратора
+          console.log('Хьюстон, у нас проблемы с получением уведомлений: ' + response.status);
+          throw new Error();
+        }
+
+        // Получаем ответ от сервера и проверяем его
+        return response.json().then(function(data) { 
+          if (data.error || !data.notification) { 
+            console.error('Сервер вернул ошибку: ', data.error);
+            throw new Error();  
+          }  
+
+          var title = data.notification.title;
+          var message = data.notification.message;
+          var icon = data.notification.icon;
+          var notificationTag = data.notification.tag;
+          var custom_data = data.notification.data;
+
+          return self.registration.showNotification(title, {
+            body: message,
+            icon: icon,
+            tag: notificationTag,
+            data: custom_data
+          });
+        });
+      })
+      .catch(function(err) {
+        // В случае ошибки отображаем уведомление
+        // со статичными данными
+        console.error('Невозможно получить данные с сервера: ', err);
+
+        var title = 'Ошибочка вышла';
+        var message = 'Мы хотели сообщить вам что-то важное, но у нас всё сломалось.';
+        var icon = URL_TO_DEFAULT_ICON;
+        var notificationTag = 'notification-error';
+        return self.registration.showNotification(title, {
+            body: message,
+            icon: icon,
+            tag: notificationTag
+          });
+      });
+    })
+  );  
+});
+
+/*self.addEventListener('push', function(event) {
+  // Since there is no payload data with the first version  
+  // of push messages, we'll grab some data from  
+  // an API and use it to populate a notification  
+  event.waitUntil(  
+    fetch(SOME_API_ENDPOINT).then(function(response) {  
+      if (response.status !== 200) {  
+        // Either show a message to the user explaining the error  
+        // or enter a generic message and handle the
+        // onnotificationclick event to direct the user to a web page  
+        console.log('Looks like there was a problem. Status Code: ' + response.status);  
+        throw new Error();  
+      }
+
+      // Examine the text in the response  
+      return response.json().then(function(data) {  
+        if (data.error || !data.notification) {  
+          console.error('The API returned an error.', data.error);  
+          throw new Error();  
+        }
+
+        var title = data.notification.title;  
+        var message = data.notification.message;  
+        var icon = data.notification.icon;  
+        var notificationTag = data.notification.tag;
+
+        return self.registration.showNotification(title, {  
+          body: message,  
+          icon: icon,  
+          tag: notificationTag  
+        });  
+      });  
+    }).catch(function(err) {
+      console.error('Unable to retrieve data', err);
+
+      var title = 'An error occurred';
+      var message = 'We were unable to get the information for this push message';  
+      var icon = URL_TO_DEFAULT_ICON;  
+      var notificationTag = 'notification-error';  
+      return self.registration.showNotification(title, {  
+          body: message,  
+          icon: icon,  
+          tag: notificationTag  
+        });  
+    })  
+  );  
+});*/
+
+/*self.addEventListener('push', function(event) {
   var title = 'Всем привет!';
   var body = 'Как дела?';
   var icon = '/images/icon-192x192.png';
   var tag = 'simple-push-demo-notification-tag';
 
+  console.log('event push');
+  console.log(event);
+
+  var data = {};
+  if (event.data) {
+    data = event.data.json();
+  }
+  console.log(data);
+  var title = data.title;
+  var message = data.message;
+  var icon = data.icon;
+
+  console.log(event);
+
+
   event.waitUntil(
     self.registration.showNotification(title, {
-      body: body,
-      icon: icon,
-      tag: tag
+      body: message,
+      icon: icon
+    })
+  );
+});*/
+
+self.addEventListener('notificationclick', function(event) {
+  console.log('Пользователь кликнул по уведомлению: ', event.notification.tag);
+  // Закрываем уведомление
+  event.notification.close();
+
+  // Смотрим, открыта ли вкладка с данной ссылкой
+  // и фокусируемся или открываем ссылку в новой вкладке
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window'
+    })
+    .then(function(clientList) {
+      var url = event.notification.data;
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if (client.url == url && 'focus' in client)
+          return client.focus();
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
     })
   );
 });
 
-self.addEventListener('notificationclick', function(event) {
+/*self.addEventListener('notificationclick', function(event) {
   // Android doesn’t close the notification when you click on it
   // See: http://crbug.com/463146
   event.notification.close();
@@ -53,7 +203,7 @@ self.addEventListener('notificationclick', function(event) {
       return clients.openWindow('/');
     }
   }));
-});
+});*/
 
 self.addEventListener('install', function(event) {
   function onInstall (event) {

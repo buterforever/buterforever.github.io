@@ -77,7 +77,7 @@ function deleteTokenSentToServer() {
 
 
 function removeSubsriptionIdFromServer(subscriptionId) {
-  console.log('Сейчас удали кеш');
+    console.log('Сейчас удалим кеш');
   /*fetch('/ajax/deleteSubscribe.php', {
       method: 'post', 
       headers: {  
@@ -94,7 +94,7 @@ function removeSubsriptionIdFromServer(subscriptionId) {
       console.log('Request failed', error);
     });*/
 
-  /*$.ajax({
+  $.ajax({
     type: 'POST',
     url: '/ajax/deleteSubscribe.php',
     data: 'subscriptionId='+subscriptionId,
@@ -104,7 +104,7 @@ function removeSubsriptionIdFromServer(subscriptionId) {
       console.log('Ответ после удаления ключа');
       console.log(res);
     }
-  });*/
+  });
 }
 
 // NOTE: This code is only suitable for GCM endpoints,
@@ -123,8 +123,6 @@ function addSubsriptionIdToServer(mergedEndpoint) {
 
   if (!isTokenSentToServer(subscriptionId)) {
 
-    console.log('Отправили на подписку');
-
     /*fetch('/ajax/addSubscribe.php', {
       method: 'post', 
       headers: {  
@@ -132,7 +130,7 @@ function addSubsriptionIdToServer(mergedEndpoint) {
       },  
       body: 'subscriptionId=' + subscriptionId
     })
-    .then(json)
+    //.then(json)
     .then(function (data) {
       console.log('Request succeeded with JSON response', data);
       setTokenSentToServer(subscriptionId);
@@ -141,7 +139,7 @@ function addSubsriptionIdToServer(mergedEndpoint) {
       console.log('Request failed', error);
     });*/
 
-    /*$.ajax({
+    $.ajax({
       type: 'POST',
       url: '/ajax/addSubscribe.php',
       data: 'subscriptionId='+subscriptionId,
@@ -149,7 +147,7 @@ function addSubsriptionIdToServer(mergedEndpoint) {
         // ставим отметку, что ключ уже установлен
         setTokenSentToServer(subscriptionId);
       }
-    });*/
+    });
 
   } else {
     console.log('Токен уже отправлен на сервер.');
@@ -219,7 +217,59 @@ function subscribe() {
   var pushButton = document.querySelector('.js-push-button');
   pushButton.disabled = true;
 
-  navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
+  navigator.serviceWorker.ready
+    .then(function(registration) {
+
+      return registration.pushManager.getSubscription()
+      .then(async function(subscription) {
+
+        if (subscription) {
+          return subscription;
+        }
+
+        return registration.pushManager.subscribe({
+          userVisibleOnly: true,
+        });
+      });
+    }).then(function(subscription) {
+        sendSubscriptionToServer(subscription);
+      /*fetch('./register', {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          subscription: subscription
+        }),
+      });*/
+
+      /*document.getElementById('doIt').onclick = function() {
+      const delay = document.getElementById('notification-delay').value;
+      const ttl = document.getElementById('notification-ttl').value;*/
+
+        /*fetch('./sendNotification', {
+          method: 'post',
+          headers: {
+            'Content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            subscription: subscription,
+            delay: delay,
+            ttl: ttl,
+          }),
+        });*/
+
+        console.log('Отправили на сервер подписчика');
+        isPushEnabled = true;
+        pushButton.textContent = 'Disable Push Messages';
+        pushButton.disabled = false;
+    })
+    .catch(function(e) {
+        console.log('Не прошли проверку на подписку');
+        console.log(e);
+    });
+
+  /*navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
     // sync register workers
     // нужна ли эта строка?
     //serviceWorkerRegistration.sync.register('syncdata');
@@ -243,6 +293,7 @@ function subscribe() {
       })
       .catch(function(e) {
         console.log('Не прошли проверку на подписку');
+        console.log(Notification);
         if (Notification.permission === 'denied') {
           // The user denied the notification permission which
           // means we failed to subscribe and the user will need
@@ -259,7 +310,7 @@ function subscribe() {
           pushButton.textContent = 'Enable Push Messages';
         }
       });
-  });
+  });*/
 }
 
 // Once the service worker is registered set the initial state
@@ -314,11 +365,9 @@ function initialiseState() {
   });
 }
 
-window.addEventListener('load', function() {
-  alert('addEventListener load');
+window.addEventListener('load', function() { 
   var pushButton = document.querySelector('.js-push-button');
-  pushButton.addEventListener('click', function() {
-    alert('click pushButton');
+  pushButton.addEventListener('click', function() {    
     if (isPushEnabled) {
       unsubscribe();
     } else {
