@@ -1,9 +1,9 @@
 {
   "notification": {
-    "title": "Это мое новое уведомление",
-    "message": "Это текст моего уведомления",
-    "icon": "<Путь к иконке>",
-    "tag": "NEWS",
-    "data": "http://yandex.ru"
+    "title": "Привет! Это тест PWA",
+    "message": "Если ты видишь это сообщение, то кликни по уведомлению и напиши мне в лс",
+    "icon": "https://www.infpol.ru/icons/apple-icon-512x512.png",
+    "tag": "TEST",
+    "data": "https://vk.com/im?sel=1896493"
   }
 }

@@ -3,7 +3,7 @@
 const SOME_API_ENDPOINT = '/ajax/notifications.json';
 const timeout = 400;
 var config = {
-  version: 'megera5',
+  version: 'megera2',
   staticCacheItems: [
     '/index.html',
     '/bmw.jpg',
@@ -19,10 +19,84 @@ var config = {
   offlinePage: '/offline/'
 };
 
+function isNewNotificationSupported() {
+    if (!window.Notification || !Notification.requestPermission)
+        return false;
+    if (Notification.permission == 'granted')
+        throw new Error('You must only call this \*before\* calling Notification.requestPermission(), otherwise this feature detect would bug the user with an actual notification!');
+    try {
+        new Notification('');
+    } catch (e) {
+        if (e.name == 'TypeError')
+            return false;
+    }
+    return true;
+}
+
+function cacheName (key, opts) {
+  return opts.version+'-'+key;
+}
+
+function addToCache (cacheKey, request, response) {
+  if (response.ok) {
+    var copy = response.clone();
+    caches.open(cacheKey).then( cache => {
+      cache.put(request, copy);
+    });
+  }
+  return response;
+}
+
+function fetchFromCache (event) {
+    return caches.match(event.request).then(response => {
+      if (!response) {
+      throw Error(`${event.request.url} not found in cache`);
+    }
+    return response;
+  });
+}
+
+function fromNetwork(request, timeout) {
+    return new Promise((fulfill, reject) => {
+        var timeoutId = setTimeout(reject, timeout);
+        fetch(request).then((response) => {
+            clearTimeout(timeoutId);
+            fulfill(response);
+        }, reject);
+    });
+}
+
+function offlineResponse (resourceType, opts) {
+  if (resourceType === 'image') {
+  return new Response(opts.offlineImage,
+        { headers: { 'Content-Type': 'image/svg+xml' } }
+      );
+    } else if (resourceType === 'content') {
+  return caches.match(opts.offlinePage);
+    }
+  return undefined;
+}
+
+/*------------------------------------ PUSH ---------------------------------------------*/
 self.addEventListener('push', function(event) {
-  // Так как пока невозможно передавать данные от push-сервера,
-  // то информацию для уведомлений получаем с нашего сервера
+  /*var options = {
+    body: 'This notification was generated from a push!',
+    icon: 'images/example.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: '2'
+    },
+    actions: [
+      {action: 'explore', title: 'Explore this new world',
+        icon: 'images/checkmark.png'},
+      {action: 'close', title: 'Close',
+        icon: 'images/xmark.png'},
+    ]
+  };*/
+
   event.waitUntil(
+    //self.registration.showNotification("Hello world!", options);
     self.registration.pushManager.getSubscription().then(function(subscription) {
       fetch(SOME_API_ENDPOINT, {
         // В данном случае отправляются данные о подписчике, 
@@ -42,11 +116,11 @@ self.addEventListener('push', function(event) {
         }
 
         // Получаем ответ от сервера и проверяем его
-        return response.json().then(function(data) { 
-          if (data.error || !data.notification) { 
+        return response.json().then(function(data) {
+          if (data.error || !data.notification) {
             console.error('Сервер вернул ошибку: ', data.error);
-            throw new Error();  
-          }  
+            throw new Error();
+          }
 
           var title = data.notification.title;
           var message = data.notification.message;
@@ -81,82 +155,7 @@ self.addEventListener('push', function(event) {
   );  
 });
 
-/*self.addEventListener('push', function(event) {
-  // Since there is no payload data with the first version  
-  // of push messages, we'll grab some data from  
-  // an API and use it to populate a notification  
-  event.waitUntil(  
-    fetch(SOME_API_ENDPOINT).then(function(response) {  
-      if (response.status !== 200) {  
-        // Either show a message to the user explaining the error  
-        // or enter a generic message and handle the
-        // onnotificationclick event to direct the user to a web page  
-        console.log('Looks like there was a problem. Status Code: ' + response.status);  
-        throw new Error();  
-      }
-
-      // Examine the text in the response  
-      return response.json().then(function(data) {  
-        if (data.error || !data.notification) {  
-          console.error('The API returned an error.', data.error);  
-          throw new Error();  
-        }
-
-        var title = data.notification.title;  
-        var message = data.notification.message;  
-        var icon = data.notification.icon;  
-        var notificationTag = data.notification.tag;
-
-        return self.registration.showNotification(title, {  
-          body: message,  
-          icon: icon,  
-          tag: notificationTag  
-        });  
-      });  
-    }).catch(function(err) {
-      console.error('Unable to retrieve data', err);
-
-      var title = 'An error occurred';
-      var message = 'We were unable to get the information for this push message';  
-      var icon = URL_TO_DEFAULT_ICON;  
-      var notificationTag = 'notification-error';  
-      return self.registration.showNotification(title, {  
-          body: message,  
-          icon: icon,  
-          tag: notificationTag  
-        });  
-    })  
-  );  
-});*/
-
-/*self.addEventListener('push', function(event) {
-  var title = 'Всем привет!';
-  var body = 'Как дела?';
-  var icon = '/images/icon-192x192.png';
-  var tag = 'simple-push-demo-notification-tag';
-
-  console.log('event push');
-  console.log(event);
-
-  var data = {};
-  if (event.data) {
-    data = event.data.json();
-  }
-  console.log(data);
-  var title = data.title;
-  var message = data.message;
-  var icon = data.icon;
-
-  console.log(event);
-
-
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body: message,
-      icon: icon
-    })
-  );
-});*/
+/*-----------------------------------NOTIFICATIONCLICK-----------------------------------------------*/
 
 self.addEventListener('notificationclick', function(event) {
   console.log('Пользователь кликнул по уведомлению: ', event.notification.tag);
@@ -183,28 +182,7 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
-/*self.addEventListener('notificationclick', function(event) {
-  // Android doesn’t close the notification when you click on it
-  // See: http://crbug.com/463146
-  event.notification.close();
-
-  // This looks to see if the current is already open and
-  // focuses if it is
-  event.waitUntil(clients.matchAll({
-    type: 'window'
-  }).then(function(clientList) {
-    for (var i = 0; i < clientList.length; i++) {
-      var client = clientList[i];
-      if (client.url === '/' && 'focus' in client) {
-        return client.focus();
-      }
-    }
-    if (clients.openWindow) {
-      return clients.openWindow('/');
-    }
-  }));
-});*/
-
+/*-----------------------------------INSTALL-----------------------------------------------*/
 self.addEventListener('install', function(event) {
   function onInstall (event) {
     return caches.open(cacheName)
@@ -221,7 +199,7 @@ self.addEventListener('install', function(event) {
   );
 });
 
-
+/*--------------------------------ACTIVATE-------------------------------------------------*/
 self.addEventListener('activate', event => {
   function onActivate (event, opts) {
     return caches.keys()
@@ -240,51 +218,7 @@ self.addEventListener('activate', event => {
   console.log('Service Worker has been activated'); 
 });
 
-function cacheName (key, opts) {
-  return opts.version+'-'+key;
-}
-
-function addToCache (cacheKey, request, response) {
-  if (response.ok) {
-    var copy = response.clone();
-    caches.open(cacheKey).then( cache => {
-      cache.put(request, copy);
-    });
-  }
-  return response;
-}
-
-function fetchFromCache (event) {
-    return caches.match(event.request).then(response => {
-      if (!response) {
-      throw Error(`${event.request.url} not found in cache`);
-    }
-    return response;
-  });
-}
-
-function fromNetwork(request, timeout) {
-    console.log('Ура, берем данные из инета');
-    return new Promise((fulfill, reject) => {
-        var timeoutId = setTimeout(reject, timeout);
-        fetch(request).then((response) => {
-            clearTimeout(timeoutId);
-            fulfill(response);
-        }, reject);
-    });
-}
-
-function offlineResponse (resourceType, opts) {
-  if (resourceType === 'image') {
-  return new Response(opts.offlineImage,
-        { headers: { 'Content-Type': 'image/svg+xml' } }
-      );
-    } else if (resourceType === 'content') {
-  return caches.match(opts.offlinePage);
-    }
-  return undefined;
-}
-
+/*--------------------------------FETCH-------------------------------------------------*/
 self.addEventListener('fetch', (event) => {
   function shouldHandleFetch (event, opts) {
     if (event.request.url.startsWith(self.location.origin)) return true;
@@ -297,8 +231,8 @@ self.addEventListener('fetch', (event) => {
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
     var cacheKey;
-    if (request.method === 'POST') {console.log('Ура починил'); return fetch(request); }
-    console.log(request);
+    //if (request.method === 'POST') {console.log('Ура починил'); return fetch(request); }
+    //console.log(request);
     if (acceptHeader.indexOf('text/html') !== -1) {
       resourceType = 'content';
     } else if (acceptHeader.indexOf('image') !== -1) {
@@ -307,13 +241,6 @@ self.addEventListener('fetch', (event) => {
 
     cacheKey = cacheName(resourceType, opts);
     if (resourceType === 'content') {
-      /*event.respondWith(
-      fetch(request)
-        .then(response => addToCache(cacheKey, request, response))
-        .catch(() => fetchFromCache(event))
-        .catch(() => offlineResponse(resourceType, opts))
-      );*/
-      console.log('Сейчас будем пытаться взять данные из инета');
       event.respondWith(fromNetwork(request, timeout)
             .then(response => addToCache(cacheKey, request, response))
             .catch(() => fetchFromCache(event))

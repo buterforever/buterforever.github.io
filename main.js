@@ -23,7 +23,6 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 
-
 // This method handles the removal of subscriptionId
 // in Chrome 44 by concatenating the subscription Id
 // to the subscription endpoint
@@ -47,17 +46,38 @@ function endpointWorkaround(pushSubscription) {
 }
 
 function sendSubscriptionToServer(subscription) {
+  fetch('/ajax/addSubscribe.php', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: 'url=' + subscription.endpoint
+    })
+    .then(function(response) {
+      if (response.status !== 200) {
+        // TODO: Оповещаем пользователя, что что-то пошло не так
+        console.error('Хьюстон, у нас проблемы с регистрацией подписчиков: ' + response.status);
+        return;
+      }
 
-  // TODO: Send the subscription.endpoint
-  // to your server and save it to send a
-  // push message at a later date
-  //
-  // For compatibly of Chrome 43, get the endpoint via
-  // endpointWorkaround(subscription)
+      response.json().then(function(data) {
+        var endpointSections = subscription.endpoint.split('/');
+        var subscriptionId = endpointSections[endpointSections.length - 1];
+        // устанавливаем отметку, что уже подписан
+        setTokenSentToServer(subscriptionId);
+        // TODO: Оповещаем пользователя об успешной подписке
+        var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
+          '" --header Content-Type:"application/json" ' + GCM_ENDPOINT +
+          ' -d "{\\"registration_ids\\":[\\"' + subscriptionId + '\\"]}"';
 
-  var mergedEndpoint = endpointWorkaround(subscription);
-  addSubsriptionIdToServer(mergedEndpoint);
-}
+        curlCommandDiv.textContent = curlCommand;
+      });
+    })
+    .catch(function(err) {
+      // TODO: Оповещаем пользователя, что что-то пошло не так
+      console.error('Хьюстон, у нас проблемы с регистрацией подписчиков: ', err);
+    });
+};
 
 // Ставим в localStorage отметку о том, что пользователь подписан
 function isTokenSentToServer(currentToken) {
@@ -65,6 +85,7 @@ function isTokenSentToServer(currentToken) {
 }
 
 function setTokenSentToServer(currentToken) {
+  console.log('Поставили отметку для ключа ' + currentToken);
     window.localStorage.setItem(
         'sentMessagingToken',
         currentToken ? currentToken : ''
@@ -97,7 +118,7 @@ function removeSubsriptionIdFromServer(subscriptionId) {
   $.ajax({
     type: 'POST',
     url: '/ajax/deleteSubscribe.php',
-    data: 'subscriptionId='+subscriptionId,
+    data: 'url='+subscriptionId,
     success: function(res){
       // убираем отметку, что ключ уже установлен
       deleteTokenSentToServer();
@@ -122,23 +143,6 @@ function addSubsriptionIdToServer(mergedEndpoint) {
   var subscriptionId = endpointSections[endpointSections.length - 1];
 
   if (!isTokenSentToServer(subscriptionId)) {
-
-    /*fetch('/ajax/addSubscribe.php', {
-      method: 'post', 
-      headers: {  
-        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
-      },  
-      body: 'subscriptionId=' + subscriptionId
-    })
-    //.then(json)
-    .then(function (data) {
-      console.log('Request succeeded with JSON response', data);
-      setTokenSentToServer(subscriptionId);
-    })
-    .catch(function (error) {
-      console.log('Request failed', error);
-    });*/
-
     $.ajax({
       type: 'POST',
       url: '/ajax/addSubscribe.php',
@@ -153,11 +157,11 @@ function addSubsriptionIdToServer(mergedEndpoint) {
     console.log('Токен уже отправлен на сервер.');
   }
 
-  /*var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
+  var curlCommand = 'curl --header "Authorization: key=' + API_KEY +
     '" --header Content-Type:"application/json" ' + GCM_ENDPOINT +
     ' -d "{\\"registration_ids\\":[\\"' + subscriptionId + '\\"]}"';
 
-  curlCommandDiv.textContent = curlCommand;*/
+  //curlCommandDiv.textContent = curlCommand;
 }
 
 function unsubscribe() {
@@ -176,7 +180,7 @@ function unsubscribe() {
           // to allow the user to subscribe to push
           isPushEnabled = false;
           pushButton.disabled = false;
-          pushButton.textContent = 'Enable Push Messages';
+          pushButton.textContent = 'Подписаться на новости';
           return;
         }
 
@@ -187,13 +191,13 @@ function unsubscribe() {
         // We have a subcription, so call unsubscribe on it
         pushSubscription.unsubscribe().then(function() {
           pushButton.disabled = false;
-          pushButton.textContent = 'Enable Push Messages';
+          pushButton.textContent = 'Подписаться на новости';
           isPushEnabled = false;
           
-          var endpointSections = pushSubscription.endpoint.split('/');
+          /*var endpointSections = pushSubscription.endpoint.split('/');
           var subscriptionId = endpointSections[endpointSections.length - 1];
-          console.log('Все готово для удаления кеша subscriptionId');
-          removeSubsriptionIdFromServer(subscriptionId);
+          console.log('Все готово для удаления кеша subscriptionId');*/
+          removeSubsriptionIdFromServer(pushSubscription.endpoint);
 
         }).catch(function(e) {
           // We failed to unsubscribe, this can lead to
@@ -221,7 +225,7 @@ function subscribe() {
     .then(function(registration) {
 
       return registration.pushManager.getSubscription()
-      .then(async function(subscription) {
+      .then(function(subscription) {
 
         if (subscription) {
           return subscription;
@@ -233,35 +237,9 @@ function subscribe() {
       });
     }).then(function(subscription) {
         sendSubscriptionToServer(subscription);
-      /*fetch('./register', {
-        method: 'post',
-        headers: {
-          'Content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          subscription: subscription
-        }),
-      });*/
-
-      /*document.getElementById('doIt').onclick = function() {
-      const delay = document.getElementById('notification-delay').value;
-      const ttl = document.getElementById('notification-ttl').value;*/
-
-        /*fetch('./sendNotification', {
-          method: 'post',
-          headers: {
-            'Content-type': 'application/json'
-          },
-          body: JSON.stringify({
-            subscription: subscription,
-            delay: delay,
-            ttl: ttl,
-          }),
-        });*/
-
         console.log('Отправили на сервер подписчика');
         isPushEnabled = true;
-        pushButton.textContent = 'Disable Push Messages';
+        pushButton.textContent = 'Отписаться';
         pushButton.disabled = false;
     })
     .catch(function(e) {
@@ -356,7 +334,7 @@ function initialiseState() {
 
         // Set your UI to show they have subscribed for
         // push messages
-        pushButton.textContent = 'Disable Push Messages';
+        pushButton.textContent = 'Отписаться';
         isPushEnabled = true;
       })
       .catch(function(err) {
@@ -380,7 +358,7 @@ window.addEventListener('load', function() {
     if ('serviceWorker' in navigator) {
       // убираем старые service workers
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
+        for(var registration of registrations) {
                 var sw_path = registration.active.scriptURL.split('/');
                 var sw_name = sw_path[sw_path.length - 1];
                 if (sw_name != 'service_worker.js')
